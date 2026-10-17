@@ -875,6 +875,10 @@ fn generate_resource_data(settings: &Settings) -> crate::Result<ResourcesMap> {
 
     for f in &cef_files {
       let from = cef_path.join(f);
+      // CEF 154+ Windows distributions no longer ship the ANGLE DLLs
+      if matches!(*f, "libEGL.dll" | "libGLESv2.dll") && !from.exists() {
+        continue;
+      }
       let src_path = dunce::simplified(&project_out.join(f)).to_path_buf();
       fs::copy(&from, &src_path).fs_context("failed to copy CEF file for NSIS bundle", from)?;
       if settings.windows().can_sign() && should_sign(&src_path)? {
